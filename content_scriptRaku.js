@@ -81,7 +81,6 @@ let isFukumazu;
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message.source === "getdatas") {
     isFukumazu = message.data.isFukumazu;
-    console.log(isFukumazu);
     // Handle the data received from background.js (source2)
     console.log(message.data);
     const contentData = message.data;
@@ -94,32 +93,34 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     window.frames["main"].document.querySelector("#day_111018").value =
       date.getDate();
 
-    // Set the value of the first select input
-    var groupSelect =
-      window.frames["main"].document.querySelector("#group_0_111013");
-    groupSelect.value = "D01:BSOL";
+    if (!message.data.system) {
+      // Set the value of the first select input
+      var groupSelect =
+        window.frames["main"].document.querySelector("#group_0_111013");
+      groupSelect.value = "D01:BSOL";
 
-    // Create a change event
-    var changeEvent = new Event("change", {
-      bubbles: true,
-      cancelable: true,
-    });
-
-    // Trigger the change event on the first select input
-    groupSelect.dispatchEvent(changeEvent);
-
-    setTimeout(() => {
-      // Now you can set the value of the second select input
-      let tantousha =
-        window.frames["main"].document.querySelector("#field_111013");
-      tantousha.value = "0009";
       // Create a change event
       var changeEvent = new Event("change", {
         bubbles: true,
         cancelable: true,
       });
-      tantousha.dispatchEvent(changeEvent);
-    }, 2000);
+
+      // Trigger the change event on the first select input
+      groupSelect.dispatchEvent(changeEvent);
+
+      setTimeout(() => {
+        // Now you can set the value of the second select input
+        let tantousha =
+          window.frames["main"].document.querySelector("#field_111013");
+        tantousha.value = "0009";
+        // Create a change event
+        var changeEvent = new Event("change", {
+          bubbles: true,
+          cancelable: true,
+        });
+        tantousha.dispatchEvent(changeEvent);
+      }, 2000);
+    }
 
     // window.frames["main"].document.querySelector("#field_111021").value = contentData.clientName
     window.frames["main"].document.querySelector("#field_111031").value =
@@ -133,6 +134,8 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       contentData.validityPeriod;
     window.frames["main"].document.querySelector("#field_111353").value =
       contentData.quotationNumber;
+    window.frames["main"].document.querySelector("#field_111065").innerText =
+      contentData.bikou;
 
     // You can perform actions based on the data received from content_scriptRich.js here
   } else if (message.source == "estimate") {
@@ -194,8 +197,10 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       inputElement.dispatchEvent(blurEvent);
     }
   } else if (message.source === "check") {
+    console.log(message.data);
     // Handle the data received from background.js (source2)
     node.click();
+
     const contentData = message.data.contentData;
     const estimateData = message.data.estimates;
     const date = new Date(message.data.contentData.date);
@@ -230,7 +235,10 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     // Check and set background colors for other form elements
     const caseNameElement =
       window.frames["main"].document.querySelector("#field_111031");
-    if (caseNameElement.value === contentData.caseName) {
+    if (
+      caseNameElement.value.trim().replace(/ /g, " ") ===
+      contentData.caseName.trim().replace(/ /g, " ")
+    ) {
       caseNameElement.style.backgroundColor = "green";
     } else {
       caseNameElement.style.backgroundColor = "red";
@@ -238,7 +246,10 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
     const deliveryDateElement =
       window.frames["main"].document.querySelector("#field_111059");
-    if (deliveryDateElement.value === contentData.deliveryDate) {
+    if (
+      deliveryDateElement.value.trim().replace(/ /g, " ") ===
+      contentData.deliveryDate.trim().replace(/ /g, " ")
+    ) {
       deliveryDateElement.style.backgroundColor = "green";
     } else {
       deliveryDateElement.style.backgroundColor = "red";
@@ -246,7 +257,10 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
     const deliveryMethodElement =
       window.frames["main"].document.querySelector("#field_111060");
-    if (deliveryMethodElement.value === contentData.deliveryMethod) {
+    if (
+      deliveryMethodElement.value.trim().replace(/ /g, " ") ===
+      contentData.deliveryMethod.trim().replace(/ /g, " ")
+    ) {
       deliveryMethodElement.style.backgroundColor = "green";
     } else {
       deliveryMethodElement.style.backgroundColor = "red";
@@ -254,7 +268,10 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
     const validityPeriodElement =
       window.frames["main"].document.querySelector("#field_111062");
-    if (validityPeriodElement.value === contentData.validityPeriod) {
+    if (
+      validityPeriodElement.value.trim().replace(/ /g, " ") ===
+      contentData.validityPeriod.trim().replace(/ /g, " ")
+    ) {
       validityPeriodElement.style.backgroundColor = "green";
     } else {
       validityPeriodElement.style.backgroundColor = "red";
@@ -299,17 +316,19 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     estimateTable.forEach((row, index) => {
       const detailRows = row.querySelectorAll(".detailRow");
       if (estimateData[index].isHeader) {
+        function decodeHtmlEntities(str) {
+          return str.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+        }
         var inputString = estimateData[index].description;
 
         // Split the inputString into two parts at the first line break character
-        var parts = inputString.split("\n");
-        var firstLine = parts[0].trim().replace(/ /g, " ");
-        var otherLines = parts.slice(1).join("\n");
-        otherLines = otherLines.trim().replace(/ /g, " ");
+        var firstLine = inputString.trim().replace(/ /g, " ");
 
         //description 1st line
         const description = detailRows[1].querySelectorAll("pre")[1];
-        if (description.innerHTML.trim() == firstLine) {
+        ff2 = description.innerHTML.trim();
+        ff2 = decodeHtmlEntities(ff2);
+        if (ff2 == firstLine.trim()) {
           description.style.backgroundColor = "green";
         } else {
           description.style.backgroundColor = "red";

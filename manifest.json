@@ -1,36 +1,30 @@
 {
-    "manifest_version": 3,
-    "name": "MitsumoRich",
-    "version": "1.0",
-    "description": "Copies from Options",
-    "permissions": [
-        "tabs"
-    ],
-    "icons": {
-        "48": "RakuRaku.png"
+  "manifest_version": 3,
+  "name": "MitsumoRich",
+  "version": "1.0",
+  "description": "Copies from Options",
+  "permissions": ["tabs"],
+  "icons": {
+    "48": "RakuRaku.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://mitsumo-rich.jp/*"],
+      "js": ["content_scriptRich.js"]
     },
-    "background": {
-        "service_worker": "background.js"
+    {
+      "matches": ["https://app40.spreadoffice.com/*"],
+      "js": ["content_scriptSpread.js"]
     },
-    "action": {
-        "default_popup": "popup.html"
-    },
-    "content_scripts": [
-        {
-            "matches": [
-                "https://mitsumo-rich.jp/*"
-            ],
-            "js": [
-                "content_scriptRich.js"
-            ]
-        },
-        {
-            "matches": [
-                "https://hnyola.rakurakuhanbai.jp/bj7rzba/top/main"
-            ],
-            "js": [
-                "content_scriptRaku.js"
-            ]
-        }
-    ]
+    {
+      "matches": ["https://hnyola.rakurakuhanbai.jp/bj7rzba/top/main"],
+      "js": ["content_scriptRaku.js"]
+    }
+  ]
 }
